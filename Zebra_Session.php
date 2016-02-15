@@ -720,8 +720,10 @@ class Zebra_Session
 
             // if the row was inserted
             // return an empty string
-            $result->free();
-            else return '';
+            else {
+              $result->free();
+              return '';
+            }
 
         }
 

@@ -350,7 +350,9 @@ class Zebra_Session
         ')) or die(_mysql_error());
 
         // return the number of found rows
-        return $result['count'];
+        $count = $result['count'];
+        $result->free();
+        return $count;
 
     }
 
@@ -554,8 +556,12 @@ class Zebra_Session
 
         // if anything happened
         // return true
-        if ($this->_mysql_affected_rows() !== -1) return true;
+        if ($this->_mysql_affected_rows() !== -1) {
+          $result->free();
+          return true;
+        }
 
+        $result->free();
         // if something went wrong, return false
         return false;
 
@@ -578,6 +584,7 @@ class Zebra_Session
                 session_expire < "' . $this->_mysql_real_escape_string(time()) . '"
 
         ') or die($this->_mysql_error());
+        $result->free();
 
     }
 
@@ -630,6 +637,7 @@ class Zebra_Session
 
         // append this to the end
         $hash .= $this->security_code;
+        $result->free();
 
         $result = $this->_mysql_query('
 
@@ -650,7 +658,7 @@ class Zebra_Session
 
             // return found data
             $fields = @mysqli_fetch_assoc($result);
-
+            $result->free();
             // don't bother with the unserialization - PHP handles this automatically
             return $fields['session_data'];
 
@@ -705,10 +713,14 @@ class Zebra_Session
 
             // if the row was updated
             // return TRUE
-            if (@$this->_mysql_affected_rows() > 1) return true;
+            if (@$this->_mysql_affected_rows() > 1){
+             $result->free();
+             return true;
+            }
 
             // if the row was inserted
             // return an empty string
+            $result->free();
             else return '';
 
         }
